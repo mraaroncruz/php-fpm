@@ -80,6 +80,31 @@ pkgs = value_for_platform(
   "default" => %w{ php5-cgi php5-fpm }
 )
 
+service "php-fpm" do
+  supports :start => true, :restart => true, :stop => true
+  action :start
+  stop_command    "/etc/init.d/php-fpm stop"
+  start_command   "/etc/init.d/php-fpm start"
+  restart_command "/etc/init.d/php-fpm restart"
+end
+
+cookbook_file "/etc/init.d/php-fpm" do
+  source "php-fpm"
+  mode "0644"
+  notifies :restart, "service[php-fpm]"
+end
+
+cookbook_file "/etc/php5/fpm/php-fpm.conf" do
+  source "php-fpm.conf"
+  mode "0644"
+  notifies :restart, "service[php-fpm]"
+end
+
+cookbook_file "/etc/php5/fpm/pool.d/www.conf" do
+  source "www.conf"
+  notifies :restart, "service[php-fpm]"
+end
+
 unless platform?(%w{ centos redhat fedora })
   # TODO: look into the php53u-*/php53-* conflict
   require_recipe 'php::default'

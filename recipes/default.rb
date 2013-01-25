@@ -82,7 +82,7 @@ pkgs = value_for_platform(
 
 cookbook_file "/etc/init.d/php-fpm" do
   source "php-fpm"
-  mode "0644"
+  mode "0744"
   notifies :restart, "service[php-fpm]"
 end
 

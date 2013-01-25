@@ -3,8 +3,8 @@
 # description: PHP fast process manager
 
 php_fpm_BIN=/usr/bin/php-cgi
-php_fpm_CONF=/usr/local/etc/php-fpm.conf
-php_fpm_PID=/usr/local/logs/php-fpm.pid
+php_fpm_CONF=/etc/php5/fpm/php-fpm.conf
+php_fpm_PID=/tmp/php-fpm.pid
 
 php_opts="--fpm-config $php_fpm_CONF"
 

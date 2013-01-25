@@ -80,18 +80,18 @@ pkgs = value_for_platform(
   "default" => %w{ php5-cgi php5-fpm }
 )
 
+cookbook_file "/etc/init.d/php-fpm" do
+  source "php-fpm"
+  mode "0644"
+  notifies :restart, "service[php-fpm]"
+end
+
 service "php-fpm" do
   supports :start => true, :restart => true, :stop => true
   action :start
   stop_command    "/etc/init.d/php-fpm stop"
   start_command   "/etc/init.d/php-fpm start"
   restart_command "/etc/init.d/php-fpm restart"
-end
-
-cookbook_file "/etc/init.d/php-fpm" do
-  source "php-fpm"
-  mode "0644"
-  notifies :restart, "service[php-fpm]"
 end
 
 cookbook_file "/etc/php5/fpm/php-fpm.conf" do

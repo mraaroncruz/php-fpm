@@ -80,6 +80,17 @@ pkgs = value_for_platform(
   "default" => %w{ php5-cgi php5-fpm }
 )
 
+pkgs.each do |pkg|
+  package pkg do
+    action :upgrade
+  end
+end
+
+unless platform?(%w{ centos redhat fedora })
+  # TODO: look into the php53u-*/php53-* conflict
+  require_recipe 'php::default'
+end
+
 cookbook_file "/etc/init.d/php-fpm" do
   source "php-fpm"
   mode "0744"
@@ -105,13 +116,3 @@ cookbook_file "/etc/php5/fpm/pool.d/www.conf" do
   notifies :restart, "service[php-fpm]"
 end
 
-unless platform?(%w{ centos redhat fedora })
-  # TODO: look into the php53u-*/php53-* conflict
-  require_recipe 'php::default'
-end
-
-pkgs.each do |pkg|
-  package pkg do
-    action :upgrade
-  end
-end

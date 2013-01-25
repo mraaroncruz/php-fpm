@@ -91,11 +91,11 @@ unless platform?(%w{ centos redhat fedora })
   require_recipe 'php::default'
 end
 
-cookbook_file "/etc/init.d/php-fpm" do
-  source "php-fpm"
-  mode "0744"
-  notifies :restart, "service[php-fpm]"
-end
+#cookbook_file "/etc/init.d/php-fpm" do
+  #source "php-fpm"
+  #mode "0744"
+  #notifies :restart, "service[php-fpm]"
+#end
 
 service "php-fpm" do
   supports :start => true, :restart => true, :stop => true

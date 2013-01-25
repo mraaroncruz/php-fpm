@@ -1,140 +1,43 @@
-#! /bin/sh
-# chkconfig: 2345 90 10
-# description: PHP fast process manager
+#!/bin/sh
+NAME="php-fpm"
+DESC="${NAME} deamon script"
+DAEMON="/usr/sbin/php-fpm"
+DAEMON_OPTS="--fpm-config=/etc/php5/fpm/php-fpm.conf"
+#set this file to the same file as in your php-fpm.conf
+PIDFILE="/var/run/${NAME}.pid"
+QUIET="--quiet"
+START_OPTS="--start ${QUIET} --background --exec ${DAEMON} -- ${DAEMON_OPTS}"
+STOP_OPTS="--stop --pidfile ${PIDFILE}"
 
-php_fpm_BIN=/usr/bin/php-cgi
-php_fpm_CONF=/etc/php5/fpm/php-fpm.conf
-php_fpm_PID=/tmp/php-fpm.pid
+test -x $DAEMON || exit 0
 
-php_opts="--fpm-config $php_fpm_CONF"
-
-wait_for_pid () {
- try=0
-
- while test $try -lt 35 ; do
-
- case "$1" in
- 'created')
- if [ -f "$2" ] ; then
- try=''
- break
- fi
- ;;
-
- 'removed')
- if [ ! -f "$2" ] ; then
- try=''
- break
- fi
- ;;
- esac
-
- echo -n .
- try=`expr $try + 1`
- sleep 1
-
- done
-
-}
+set -e
 
 case "$1" in
- start)
- echo -n "Starting php_fpm "
-
- $php_fpm_BIN --fpm $php_opts
-
- if [ "$?" != 0 ] ; then
- echo " failed"
- exit 1
- fi
-
- wait_for_pid created $php_fpm_PID
-
- if [ -n "$try" ] ; then
- echo " failed"
- exit 1
- else
- echo " done"
- fi
- ;;
-
- stop)
- echo -n "Shutting down php_fpm "
-
- if [ ! -r $php_fpm_PID ] ; then
- echo "warning, no pid file found - php-fpm is not running ?"
- exit 1
- fi
-
- kill -TERM `cat $php_fpm_PID`
-
- wait_for_pid removed $php_fpm_PID
-
- if [ -n "$try" ] ; then
- echo " failed"
- exit 1
- else
- echo " done"
- fi
- ;;
-
- quit)
- echo -n "Gracefully shutting down php_fpm "
-
- if [ ! -r $php_fpm_PID ] ; then
- echo "warning, no pid file found - php-fpm is not running ?"
- exit 1
- fi
-
- kill -QUIT `cat $php_fpm_PID`
-
- wait_for_pid removed $php_fpm_PID
-
- if [ -n "$try" ] ; then
- echo " failed"
- exit 1
- else
- echo " done"
- fi
- ;;
-
- restart)
- $0 stop
- $0 start
- ;;
-
- reload)
-
- echo -n "Reload service php-fpm "
-
- if [ ! -r $php_fpm_PID ] ; then
- echo "warning, no pid file found - php-fpm is not running ?"
- exit 1
- fi
-
- kill -USR2 `cat $php_fpm_PID`
-
- echo " done"
- ;;
-
- logrotate)
-
- echo -n "Re-opening php-fpm log file "
-
- if [ ! -r $php_fpm_PID ] ; then
- echo "warning, no pid file found - php-fpm is not running ?"
- exit 1
- fi
-
- kill -USR1 `cat $php_fpm_PID`
-
- echo " done"
- ;;
-
- *)
- echo "Usage: $0 {start|stop|quit|restart|reload|logrotate}"
- exit 1
- ;;
-
+        start)
+                echo -n "Starting $DESC: "
+                export LD_LIBRARY_PATH="/usr/local/lib/"
+                start-stop-daemon $START_OPTS
+                echo "$NAME."
+        ;;
+        stop)
+                echo -n "Stopping $DESC: "
+                start-stop-daemon $STOP_OPTS
+                echo "$NAME."
+        ;;
+        restart)
+                echo -n "Restarting $DESC: "
+                start-stop-daemon $STOP_OPTS
+                sleep 1
+                export LD_LIBRARY_PATH="/usr/local/lib/"
+                start-stop-daemon $START_OPTS
+                echo "$NAME."
+        ;;
+        *)
+                N=/etc/init.d/$NAME
+                echo "Usage: $N {start|stop|restart}" >&2
+                exit 1
+        ;;
 esac
 
+exit 0
